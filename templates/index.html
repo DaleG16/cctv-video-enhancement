@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NightVision AI — Low-Light CCTV Enhancement</title>
+
+    <!-- Google Fonts: Rajdhani (headings), Share Tech Mono (data/mono), Inter (body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Our external stylesheet (separated from this file) -->
+    <!-- Flask serves files from /static/ automatically -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- ===================== HEADER ===================== -->
+    <!-- Sticky top bar: logo + system status + live clock -->
+    <header>
+      <div class="logo">
+        <div class="logo-icon"></div>
+        <div class="logo-text">NIGHT<span>VISION</span> AI</div>
+      </div>
+      <div class="header-right">
+        <span><span class="status-dot"></span>SYSTEM ONLINE</span>
+        <span id="live-clock">00:00:00</span>
+        <span>v2.0 // ZERO-DCE</span>
+      </div>
+    </header>
+
+    <!-- ===================== HERO ===================== -->
+    <!-- Project title + description + technology badges -->
+    <section class="hero">
+      <div class="hero-grid"></div>
+      <h1>Low-Light CCTV<br /><em>Enhancement System</em></h1>
+      <p>
+        Restoring clarity in darkness using deep learning and digital image
+        processing — for law enforcement and forensic investigation.
+      </p>
+      <div class="badge-row">
+        <span class="badge badge-cyan">Zero-DCE Neural Net</span>
+        <span class="badge badge-green">MOG2 + Optical Flow</span>
+        <span class="badge badge-orange">CLAHE Enhancement</span>
+        <span class="badge badge-cyan">Real-Time HUD</span>
+        <span class="badge badge-green">Frame-Level Stats</span>
+      </div>
+    </section>
+
+    <!-- ===================== MAIN LAYOUT ===================== -->
+    <!-- Two-column grid: left (upload + output + specs + log) | right (stats + pipeline) -->
+    <div class="main">
+      <!-- ===== LEFT COLUMN ===== -->
+      <div class="left-col">
+        <!-- INPUT FEED PANEL: Video upload zone + progress bar -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">⬡ INPUT FEED</span>
+            <span class="panel-dot"></span>
+          </div>
+
+          <!-- Clickable drag-and-drop area -->
+          <div
+            class="upload-zone"
+            id="upload-zone"
+            onclick="document.getElementById('file-input').click()"
+          >
+            <div class="corner-tl"></div>
+            <div class="corner-br"></div>
+            <div class="upload-icon">
+              <!-- Upload arrow SVG icon -->
+              <svg
+                width="22"
+                height="22"
+                fill="none"
+                stroke-width="1.5"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M15 10l-4-4-4 4M11 6v9M20 17.6V19a2 2 0 01-2 2H6a2 2 0 01-2-2v-1.4"
+                />
+              </svg>
+            </div>
+            <div class="upload-title">DROP FOOTAGE HERE</div>
+            <div class="upload-sub">MP4 / AVI / MOV / MKV — MAX 500MB</div>
+            <button
+              class="upload-btn"
+              onclick="
+                event.stopPropagation();
+                document.getElementById('file-input').click();
+              "
+            >
+              <span>SELECT FILE</span>
+            </button>
+          </div>
+
+          <!-- Hidden real file input (triggered by the styled buttons above) -->
+          <input type="file" id="file-input" accept="video/*" />
+
+          <!-- Shows selected filename + size after file is chosen -->
+          <div class="file-name-display" id="file-name"></div>
+
+          <!-- Process button (hidden until file is selected) -->
+          <button
+            class="process-btn"
+            id="process-btn"
+            onclick="startProcessing()"
+          >
+            <span class="btn-text">⬡ ENHANCE &amp; ANALYZE</span>
+          </button>
+
+          <!-- Progress bar section (hidden until processing starts) -->
+          <div class="progress-section" id="progress-section">
+            <div class="progress-label">
+              <span id="status-text">INITIALIZING...</span>
+              <span id="progress-pct">0%</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+            <!-- Stage indicator chips — light up as each pipeline stage runs -->
+            <div class="progress-stages">
+              <span class="stage-chip" id="stage-dce">ZERO-DCE</span>
+              <span class="stage-chip" id="stage-clahe">CLAHE</span>
+              <span class="stage-chip" id="stage-motion">MOTION</span>
+              <span class="stage-chip" id="stage-render">RENDER</span>
+              <span class="stage-chip" id="stage-convert">CONVERT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ENHANCED OUTPUT PANEL: Video player (hidden until done) -->
+        <div class="panel" id="output-panel" style="display: none">
+          <div class="panel-header">
+            <span class="panel-title">⬡ ENHANCED OUTPUT</span>
+            <span class="panel-dot" style="background: var(--accent2)"></span>
+          </div>
+          <div class="video-section" style="display: block">
+            <video id="output-video" controls></video>
+            <div class="video-controls">
+              <!-- Download button — href set dynamically by JS -->
+              <a
+                class="ctrl-btn"
+                id="download-btn"
+                download="enhanced_cctv.mp4"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 3v12M7 11l5 5 5-5M3 19h18" />
+                </svg>
+                DOWNLOAD
+              </a>
+              <!-- Reset button -->
+              <button class="ctrl-btn" onclick="resetAll()">
+                <svg
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M4 12a8 8 0 018-8 8 8 0 010 16 8 8 0 01-8-8z" />
+                  <path d="M4 12H2m0 0l2-2M2 12l2 2" />
+                </svg>
+                NEW FILE
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TECH SPECS PANEL: Static table of technologies used -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">⬡ TECH SPECS</span>
+          </div>
+          <table class="specs-table">
+            <tr>
+              <td>Model</td>
+              <td>Zero-DCE (no-pool)</td>
+            </tr>
+            <tr>
+              <td>Backend</td>
+              <td>PyTorch + Flask</td>
+            </tr>
+            <tr>
+              <td>Motion</td>
+              <td>MOG2 + Farnebäck</td>
+            </tr>
+            <tr>
+              <td>Contrast</td>
+              <td>CLAHE (LAB color)</td>
+            </tr>
+            <tr>
+              <td>Noise Red.</td>
+              <td>Bilateral Filter</td>
+            </tr>
+            <tr>
+              <td>Output</td>
+              <td>Side-by-side MP4</td>
+            </tr>
+            <tr>
+              <td>Target</td>
+              <td>Law Enforcement</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- SYSTEM LOG PANEL: Live timestamped activity log -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">⬡ SYSTEM LOG</span>
+          </div>
+          <div class="alert-log" id="alert-log">
+            <!-- Initial entry — more added dynamically by JS -->
+            <div class="log-entry ok">
+              <span class="log-time">READY</span>
+              <span class="log-msg">System initialized. Awaiting input.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end .left-col -->
+
+      <!-- ===== RIGHT COLUMN ===== -->
+      <div class="right-col">
+        <!-- ANALYSIS STATS PANEL: Metrics populated after processing -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">⬡ ANALYSIS STATS</span>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-cell">
+              <div class="stat-value" id="stat-frames">—</div>
+              <div class="stat-label">FRAMES</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-value green" id="stat-motion">—</div>
+              <div class="stat-label">MOTION %</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-value orange" id="stat-lum-orig">—</div>
+              <div class="stat-label">ORIG LUM</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-value green" id="stat-lum-enh">—</div>
+              <div class="stat-label">ENH LUM</div>
+            </div>
+            <div class="stat-cell" style="grid-column: span 2">
+              <div class="stat-value" id="stat-gain" style="font-size: 18px">
+                —
+              </div>
+              <div class="stat-label">BRIGHTNESS GAIN</div>
+            </div>
+            <div class="stat-cell" style="grid-column: span 2">
+              <div class="stat-value" id="stat-time" style="font-size: 18px">
+                —
+              </div>
+              <div class="stat-label">PROCESSING TIME (S)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PIPELINE PANEL: Numbered list of the 5 enhancement stages -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">⬡ PIPELINE</span>
+          </div>
+          <div class="pipeline">
+            <div class="pipe-step">
+              <div class="pipe-num">01</div>
+              <div class="pipe-info">
+                <div class="pipe-name">Zero-DCE Enhancement</div>
+                <div class="pipe-desc">
+                  Deep learning model boosts brightness without noise
+                  amplification
+                </div>
+              </div>
+              <div class="pipe-tag ml">DEEP LEARNING</div>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-num">02</div>
+              <div class="pipe-info">
+                <div class="pipe-name">Bilateral Denoising</div>
+                <div class="pipe-desc">
+                  Edge-preserving noise removal — sharper than Gaussian
+                </div>
+              </div>
+              <div class="pipe-tag">DIP</div>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-num">03</div>
+              <div class="pipe-info">
+                <div class="pipe-name">Gamma Correction</div>
+                <div class="pipe-desc">
+                  Perceptual brightness normalization (γ = 1.4)
+                </div>
+              </div>
+              <div class="pipe-tag">DIP</div>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-num">04</div>
+              <div class="pipe-info">
+                <div class="pipe-name">CLAHE</div>
+                <div class="pipe-desc">
+                  Adaptive contrast limited histogram equalization on LAB
+                </div>
+              </div>
+              <div class="pipe-tag">DIP</div>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-num">05</div>
+              <div class="pipe-info">
+                <div class="pipe-name">Motion Detection</div>
+                <div class="pipe-desc">
+                  MOG2 background subtraction + Farnebäck optical flow hybrid
+                </div>
+              </div>
+              <div class="pipe-tag ml">ML + CV</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end .right-col -->
+    </div>
+    <!-- end .main -->
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer>
+      <p>
+        NIGHTVISION AI // DIGITAL IMAGE PROCESSING &amp; ML SYSTEM // BUILT WITH
+        <em>ZERO-DCE</em> + <em>OPENCV</em> + <em>PYTORCH</em>
+      </p>
+      <p style="margin-top: 6px">
+        Problem Based Learning Project // Low-Light CCTV Enhancement // For
+        <em>Law Enforcement</em>
+      </p>
+    </footer>
+
+    <!-- Our external JavaScript (separated from this file) -->
+    <!-- Placed at bottom so HTML elements exist before JS runs -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </body>
+</html>
