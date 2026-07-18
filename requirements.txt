@@ -2,28 +2,13 @@
 # NightVision AI — Requirements
 # =============================================
 
-
 # Web Framework
 Flask==2.3.3
 Werkzeug==2.3.7
 
 # Deep Learning & ML
 torch==2.0.1
-torchvision==0.15.2
 numpy==1.24.3
 
 # Computer Vision
 opencv-python==4.8.0.76
-opencv-contrib-python==4.8.0.76
-
-# Video Processing
-opencv-python-headless==4.8.0.76
-
-# Utilities
-Pillow==10.0.0
-python-dotenv==1.0.0
-
-
-# Optional: For GPU support (install manually via pip index URL)
-# torch==2.0.1 with CUDA 11.8:
-# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
