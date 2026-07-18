@@ -167,13 +167,13 @@ pip install -r requirements.txt
 **For GPU support (CUDA 11.8):**
 
 ```bash
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip install torch --index-url https://download.pytorch.org/whl/cu118
 ```
 
 **For CPU only:**
 
 ```bash
-pip install torch torchvision torchaudio
+pip install torch
 ```
 
 ### Step 3: Install FFmpeg
@@ -184,33 +184,17 @@ pip install torch torchvision torchaudio
 brew install ffmpeg
 ```
 
-**Ubuntu/Debian:**
-
-```bash
-sudo apt-get install ffmpeg
-```
-
 **Windows (Chocolatey):**
 
 ```bash
 choco install ffmpeg
 ```
 
-### Step 4: Download Pre-trained Weights
+### Model Weights
 
-Download the Zero-DCE model weights and place in `model/weights.pth`:
+The pretrained **Zero-DCE** model weights (`model/weights.pth`) are already included in this repository. No additional download is required.
 
-- [Zero-DCE Weights](https://github.com/Li-Chongyi/Zero-DCE) (~50MB)
-
-Alternatively, if weights are included in repo (large file):
-
-```bash
-# Weights are tracked via Git LFS
-git lfs install
-git lfs pull
-```
-
-### Step 5: Run the Application
+### Step 4: Run the Application
 
 ```bash
 python app.py
@@ -335,10 +319,6 @@ crf=23
 
 ## 🐛 Troubleshooting
 
-### Issue: "Model weights not found"
-
-**Solution:** Download weights and place in `model/weights.pth`
-
 ### Issue: "ffmpeg command not found"
 
 **Solution:** Install FFmpeg (see Installation step 3)
@@ -407,6 +387,7 @@ Contributions are welcome! Please:
 
 ### Areas for Contribution
 
+- [ ] Performance optimization for faster video processing
 - [ ] Batch processing (multiple videos)
 - [ ] REST API endpoint for integration
 - [ ] Docker containerization
