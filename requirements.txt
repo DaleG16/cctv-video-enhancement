@@ -12,3 +12,5 @@ numpy==1.24.3
 
 # Computer Vision
 opencv-python==4.8.0.76
+
+gunicorn
